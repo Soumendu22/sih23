@@ -26,6 +26,8 @@ app = Flask(__name__)
 
 # vs = VideoStream(usePiCamera=1).start()
 vs = VideoStream(src=0, resolution=(1280, 720)).start()
+# vs.stream.set(3, 1280)
+# vs.stream.set(4, 720)
 time.sleep(2.0)
 
 
@@ -119,13 +121,13 @@ def detect_motion(frameCount):
             cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            if cx < 640 and cy < 360:                           # Telling the General Location of the Detection
+            if cx < 402 and cy < 301:                           # Telling the General Location of the Detection
                 position = "Top Left"
-            elif cx > 640 and cy > 360:
+            elif cx > 402 and cy > 301:
                 position = "Bottom Right"
-            elif cx > 640 and cy < 360:
+            elif cx > 402 and cy < 301:
                 position = "Top Right"
-            elif cx < 640 and cy > 360:
+            elif cx < 402 and cy > 301:
                 position = "Bottom Left"
             else:
                 position = "Centre"
