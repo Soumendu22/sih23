@@ -14,9 +14,9 @@ import math
 import numpy
 from sort import *
 from datetime import datetime
-# import torch
+import torch
 
-# torch.cuda.set_device(0)
+torch.cuda.set_device(0)
 
 open('logs.txt', 'w').close()
 
@@ -26,15 +26,14 @@ lock = threading.Lock()
 app = Flask(__name__)
 
 # vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0, resolution=(1280, 720)).start()
+vs = VideoStream(src=0, resolution=(640, 480)).start()
 # vs.stream.set(3, 1280)
 # vs.stream.set(4, 720)
 time.sleep(2.0)
 
 tracker = Sort(max_age=25, min_hits=3, iou_threshold=0.3)
-limits = [400, 297, 673, 297]
-totalcount =[]
-activeCount= []
+totalCount = []
+activeCount = []
 
 model = YOLO("../Yolo-Weights/yolov8n.pt")
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
@@ -61,7 +60,7 @@ def main_page():
 
 
 def detect_motion(frameCount):
-    global vs, outputFrame, lock, currentClass, id, position, logs
+    global vs, outputFrame, lock, currentClass, id, position, logs, conf
     while True:
         img = vs.read()
         # imgRegion = cv2.bitwise_and(img, mask)
@@ -72,13 +71,7 @@ def detect_motion(frameCount):
             for box in boxes:
                 # Bounding Box
                 x1, y1, x2, y2 = box.xyxy[0]
-                # x1, y1, w, h = box.xywh[0]
-                # x1, y1, w, h = int(x1), int(y1), int(w), int(h)
-                # cv2.rectangle(img,(x1, y1), (x2, y2), (255,0,255),3)
                 x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-                w, h = (x2 - x1), (y2 - y1)
-                # print(x1, y1, x2, y2)
-                # cvzone.cornerRect(img, (x1, y1, w, h), l=8, t=2)
                 # Confidence
                 conf = math.ceil((box.conf[0] * 100))
                 print(conf)
@@ -87,9 +80,6 @@ def detect_motion(frameCount):
                 currentClass = classNames[cls]
                 if ((currentClass == "person")
                         and conf > 45):
-                    # cvzone.cornerRect(img, (x1, y1, w, h), l=8, t=2, rt=5)
-                    # cvzone.putTextRect(img, f'{classNames[cls]} {conf}%', (max(0, x1), max(0, y1 + 35)), scale=0.75,
-                    #                    thickness=1, colorR=(0, 0, 0), colorT=(255, 255, 255), offset=5)
                     currentArray = numpy.array([x1, y1, x2, y2, conf])
                     detections = np.vstack((detections, currentArray))
         resultsTracker = tracker.update(detections)
@@ -105,41 +95,34 @@ def detect_motion(frameCount):
             cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            if cx < 402 and cy < 301:                           # Telling the General Location of the Detection
-                position = "Top Left"
-            elif cx > 402 and cy > 301:
-                position = "Bottom Right"
-            elif cx > 402 and cy < 301:
-                position = "Top Right"
-            elif cx < 402 and cy > 301:
-                position = "Bottom Left"
-            else:
-                position = "Centre"
+            # if cx < 320 and cy < 240:  # Telling the General Location of the Detection
+            #     position = "Top Left"
+            # elif cx > 320 and cy > 240:
+            #     position = "Bottom Right"
+            # elif cx > 320 and cy < 240:
+            #     position = "Top Right"
+            # elif cx < 320 and cy > 240:
+            #     position = "Bottom Left"
+            # else:
+            #     position = "Centre"
 
-            # if ((currentClass == "person")):
-            #     print(f'{current_time} : {currentClass.capitalize()} Spotted at {position}({cx}, {cy})')  # Log Printing
-            #     with open('logs.txt', 'a') as logs:
-            #         logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}({cx}, {cy})')
-            if 0 < cx < 1280 and 0 < cy < 720:
+            if 0 < cx < 640 and 0 < cy < 480:
                 if activeCount.count(id) == 0:
                     activeCount.append(id)
                 for a in activeCount:
-                    if a not in totalcount:
+                    if a not in totalCount:
                         now = datetime.now()
                         current_time = now.strftime("%H:%M:%S")
-                        print(f'{current_time} : Person Spotted at {position} {a}')  # Log Printing
+                        print(f'{current_time} : Person Spotted')  # Log Printing
                         with open('logs.txt', 'a') as logs:
-                            # logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}({cx}, {cy})')
-                            logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}')
-                if totalcount.count(id) == 0:
-                    totalcount.append(id)
-        new_line = '\n'
-        cvzone.putTextRect(img, f'TD :{len(totalcount)}  AD :{len(activeCount)}', (0, 25), offset=5, scale=2)
+                            logs.write(f'\n{current_time} : Person Spotted')
+                if totalCount.count(id) == 0:
+                    totalCount.append(id)
+        cvzone.putTextRect(img, f'TD :{len(totalCount)}  AD :{len(activeCount)}', (0, 25), offset=5, scale=2)
         # cvzone.putTextRect(img, f'AD :{len(activeCount)}', (0, 100))
         with lock:
             outputFrame = img.copy()
         activeCount.clear()
-
 
 
 def generate():
@@ -160,28 +143,12 @@ def video_feed():
     return Response(generate(),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
-# @app.route('/logs')
-# def stream():
-#     with open('logs.txt') as f:
-#         while True:
-#             yield f.read()
-#             time.sleep(0.1)
-
-#     return app.response_class(stream(), mimetype='text/plain')
 
 @app.route('/data')
 def data():
     with open('logs.txt') as f:
         yield f.read()
-    # fname = 'logs.txt'
-    # num_lines = 0
-    # out = ''
-    # with open(fname, 'r') as f:
-    #    for line in f:
-    #       num_lines += 1
-    # for i in range(num_lines,num_lines-10,-1):
-	#     out += linecache.getline("file.txt",i)
-    # yield(out)
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
