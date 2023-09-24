@@ -6,7 +6,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chakravyuh-The Detector</title>
-
+  <style>
+    pre {
+       width: 500px;
+       height: 400px;
+       overflow: scroll;
+    }
+   </style>
+   
   <!-- 
     - favicon
   -->
@@ -141,27 +148,16 @@
 
     </div>
   </section>
-
-  <section class="popular" id="video">
+  <div class="video_logs" style="display: flex; justify-content: space-around;">
     <div class="container">
         <h1 class="h5 hero-title">Video feed</h1>
         <img src="{{ url_for('video_feed') }}">
     </div>
-    </section>
-  
-    <section class="cta" id="logs">
-        <div class="container">
-
-          <div class="cta-content">
-            <p class="section-subtitle">Human detction</p>
-
-            <h2 class="h2 section-title">lOGS</h2>
-
-          </div>
-         
-        </div>
-      </section>
-
+    <div class="logging_window">
+      <h2 class="h2 section-title">lOGS</h2>
+       <pre id="output"></pre>
+    </div>
+    </div>
     </article>
   
 
@@ -261,7 +257,19 @@
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-
+  
+  <script type="text/javascript">
+    var output = document.getElementById("output");
+    
+    function updater() {
+      fetch('/data')
+      .then(response => response.text())
+      .then(text => (output.innerHTML = text));  // update page with new data
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    setInterval(updater, 1000);  // run `updater()` every 1000ms (1s)
+    </script>
 
 </body>
 </html>
