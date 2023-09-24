@@ -7,7 +7,7 @@ cap = cv2.VideoCapture(0)  # For WebCam
 # cap = cv2.VideoCapture("../Videos/cars.mp4")  # For Video
 cap.set(3, 1280)  # For Webcam
 cap.set(4, 720)  # For WebCam
-model = YOLO("../Yolo-Weights/yolov8l.pt")
+model = YOLO("../Yolo-Weights/yolov8x.pt")
 
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
               "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
