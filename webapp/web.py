@@ -129,7 +129,8 @@ def detect_motion(frameCount):
                         current_time = now.strftime("%H:%M:%S")
                         print(f'{current_time} : Person Spotted at {position} {a}')  # Log Printing
                         with open('logs.txt', 'a') as logs:
-                            logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}({cx}, {cy})')
+                            # logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}({cx}, {cy})')
+                            logs.write(f'\n{current_time} : {currentClass.capitalize()} Spotted at {position}')
                 if totalcount.count(id) == 0:
                     totalcount.append(id)
         new_line = '\n'
